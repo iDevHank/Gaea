@@ -1,0 +1,33 @@
+env:
+  global:
+  - FRAMEWORK_NAME=Gaea
+  - GITHUB_NAME=iDevHank
+language: objective-c
+os: osx
+osx_image: xcode8
+xcode_workspace: $FRAMEWORK_NAME.xcworkspace
+xcode_scheme: $FRAMEWORK_NAME
+git:
+  submodules: false
+before_install:
+- brew update
+- brew outdated carthage || brew upgrade carthage
+- bundle install
+- git submodule update --init --recursive
+script:
+  - xcodebuild -workspace $FRAMEWORK_NAME.xcworkspace -scheme $FRAMEWORK_NAME -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 7,OS=latest' test
+  - gem install cocoapods --pre
+  - pod repo update
+  - pod lib lint $FRAMEWORK_NAME.podspec
+before_deploy:
+- carthage build --no-skip-current
+- carthage archive $FRAMEWORK_NAME
+deploy:
+  provider: releases
+  api_key:
+    secure: tEcEIr37IAaqTF0ChY/Fdwsj227Tkz8FrMuFGxh9di8Dqg/hA0Mqf0F/9CK8sCe9MdfW30wHIdBRZzQwTR3oanZtDb8XS9YJFsQNOsrIBXzHb1zjJkAQJF53rlkOETKXKjZuOyP1+k5iCXQLFp/D3HaRRDE4Hc4J4sOvit7G3U4Dj9DPOfXvfBX0KOGOWjpVAJJltmo3pBFsxC9xMSUMpUtJNDPz9WNGvkOauYfK83Ybqs41Kaj++e3pbULwLYqU0P9+fEPuA59zNXJ4lvoQ0yLewmlUnPRtksgJMUGYAw7cHdjHUL1RL1Be3Uy0sfNu+u4B+p83PD6nS1gv8YJzaXJZ0EQ1/fE15SQL7cm3Ku4bl2ZobN7SblGwc1wDpgKIfU42cH1+Qs/UxR439fH2cNa2ivHADFO9XYra+2gm4gYj/KE4Evf9q+nXeZc3U8yc5ylOQhzVQCAVdIbQ9c6VZQQQJFIlcbpldx8oJYw4132GePNwoEUO5gYhNEHfNRZ7xOCs0cXJlt67vk7gFjpHrrv1uAj0ouh1LE6d+5ygZQYghsM7DnnY1FD2OQchEjqZUMQDu08CoBWRvVk166FHMyKbXD8eCtRHred75U5fwTAerAqDJ2udvU7WD+Ah1fOIU/u2tCF1cPE7Py3HaWGYsXllp8T10jix+mlRgbTI4Uw=
+  file: $FRAMEWORK_NAME.framework.zip
+  skip_cleanup: true
+  on:
+    repo: $GITHUB_NAME/$FRAMEWORK_NAME
+    tags: true
